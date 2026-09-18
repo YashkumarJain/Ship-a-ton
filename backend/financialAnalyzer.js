@@ -95,9 +95,39 @@ function canAffordSavings(targetAmount) {
   };
 }
 
+function compareMonthlySpending() {
+  const currentMonth = {
+    Food: 600,
+    Shopping: 400,
+    Transport: 200
+  };
+
+  const lastMonth = {
+    Food: 400,
+    Shopping: 250,
+    Transport: 180
+  };
+
+  const differences = {};
+
+  for (const category in currentMonth) {
+    const current = currentMonth[category];
+    const previous = lastMonth[category] || 0;
+
+    differences[category] = current - previous;
+  }
+
+  return {
+    currentMonth,
+    lastMonth,
+    differences
+  };
+}
+
 module.exports = {
   spendingByCategory,
   highestSpendingCategory,
   totalSpending,
-  canAffordSavings
+  canAffordSavings,
+  compareMonthlySpending
 };

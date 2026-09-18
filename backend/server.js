@@ -6,7 +6,8 @@ const {
   spendingByCategory,
   highestSpendingCategory,
   totalSpending,
-  canAffordSavings
+  canAffordSavings,
+  compareMonthlySpending
 } = require("./financialAnalyzer");
 
 const app = express();
@@ -53,6 +54,17 @@ app.get("/savings/can-afford", (req, res) => {
     message: result.canAfford
       ? `Yes, you can afford to save $500. You would have $${result.remainingAfterSaving} left.`
       : `No, based on your current finances, saving $500 would leave you short.`,
+    details: result
+  });
+});
+
+app.get("/spending/compare", (req, res) => {
+  const result = compareMonthlySpending();
+
+  res.json({
+    message:
+      `Your spending increased mainly because Food increased by $${result.differences.Food} ` +
+      `and Shopping increased by $${result.differences.Shopping}.`,
     details: result
   });
 });
