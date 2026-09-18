@@ -43,6 +43,18 @@ function spendingByCategory() {
   return totals;
 }
 
+function totalSpending() {
+  const totals = spendingByCategory();
+
+  let total = 0;
+
+  for (const category in totals) {
+    total += totals[category];
+  }
+
+  return total;
+}
+
 function highestSpendingCategory() {
   const totals = spendingByCategory();
 
@@ -62,6 +74,30 @@ function highestSpendingCategory() {
   };
 }
 
+function canAffordSavings(targetAmount) {
+  const monthlyIncome = 3000;
+  const spending = totalSpending();
+  const upcomingBills = 1200;
+
+  const moneyLeft =
+    monthlyIncome - spending - upcomingBills;
+
+  const canAfford = moneyLeft >= targetAmount;
+
+  return {
+    monthlyIncome: monthlyIncome,
+    spending: spending,
+    upcomingBills: upcomingBills,
+    moneyLeft: moneyLeft,
+    targetAmount: targetAmount,
+    canAfford: canAfford,
+    remainingAfterSaving: moneyLeft - targetAmount
+  };
+}
+
 module.exports = {
-  highestSpendingCategory
+  spendingByCategory,
+  highestSpendingCategory,
+  totalSpending,
+  canAffordSavings
 };

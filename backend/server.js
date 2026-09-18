@@ -3,7 +3,10 @@ const cors = require("cors");
 require("dotenv").config();
 
 const {
-  highestSpendingCategory
+  spendingByCategory,
+  highestSpendingCategory,
+  totalSpending,
+  canAffordSavings
 } = require("./financialAnalyzer");
 
 const app = express();
@@ -22,6 +25,35 @@ app.get("/spending/highest", (req, res) => {
     message: `You spent the most on ${result.category}: $${result.amount}`,
     category: result.category,
     amount: result.amount
+  });
+});
+
+app.get("/spending/categories", (req, res) => {
+  const totals = spendingByCategory();
+
+  res.json({
+    message: "Spending by category",
+    categories: totals
+  });
+});
+
+app.get("/spending/total", (req, res) => {
+  const total = totalSpending();
+
+  res.json({
+    message: `You spent $${total} in total`,
+    total: total
+  });
+});
+
+app.get("/savings/can-afford", (req, res) => {
+  const result = canAffordSavings(500);
+
+  res.json({
+    message: result.canAfford
+      ? `Yes, you can afford to save $500. You would have $${result.remainingAfterSaving} left.`
+      : `No, based on your current finances, saving $500 would leave you short.`,
+    details: result
   });
 });
 
