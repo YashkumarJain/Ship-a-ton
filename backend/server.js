@@ -1,6 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 const {
   spendingByCategory,
@@ -69,6 +74,67 @@ app.get("/spending/compare", (req, res) => {
   });
 });
 
+app.post("/ai/chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({
+        error: "Message is required"
+      });
+    }
+
+    const highest = highestSpendingCategory();
+    const categories = spendingByCategory();
+    const total = totalSpending();
+    const savings = canAffordSavings(500);
+    const comparison = compareMonthlySpending();
+
+    const financialContext = {
+      totalSpending: total,
+      spendingByCategory: categories,
+      highestSpendingCategory: highest,
+      savingsAnalysis: savings,
+      monthlyComparison: comparison
+    };
+
+    const response = await openai.responses.create({
+      model: "gpt-5.6-luna",
+      instructions: `
+You are the Ship-a-ton AI Financial Assistant.
+
+Answer the user's financial question using only the financial data provided.
+
+Rules:
+- Never invent transactions or numbers.
+- If the data does not contain the answer, say you do not have enough information.
+- Explain answers simply.
+- Do not guarantee financial outcomes.
+- Do not recommend specific stocks, crypto, or investments.
+- Keep answers short and easy to understand.
+      `,
+      input: `
+USER FINANCIAL DATA:
+${JSON.stringify(financialContext, null, 2)}
+
+USER QUESTION:
+${message}
+      `
+    });
+
+    res.json({
+      answer: response.output_text
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Something went wrong with the AI assistant"
+    });
+  }
+});
+ 
 const PORT = 5000;
 
 app.listen(PORT, () => {
