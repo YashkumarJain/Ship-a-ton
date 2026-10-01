@@ -22,7 +22,7 @@ const {
   applyApprovedProposal
 } = require("./services/goalService");
 const { parseBankStatementPdf } = require("./services/pdfStatementService");
-const { saveApprovedTransactions } = require("./services/statementService");
+const { saveApprovedTransactions, previewTransactions } = require("./services/statementService");
 const { financialToolDefinitions } = require("./financialToolDefinitions");
 const { executeFinancialTool } = require("./financialTools");
 const {
@@ -127,8 +127,10 @@ app.post("/api/statements/parse", requireAuth, upload.single("statement"), async
   try {
     if (!req.file?.buffer) return res.status(400).json({ error: "Choose a bank-statement PDF." });
     const parsed = await parseBankStatementPdf(req.file.buffer);
+    const importPreview = await previewTransactions(req, parsed.transactions);
     return res.json({
       ...parsed,
+      importPreview,
       originalFileStored: false,
       message: "Review the extracted transactions. Nothing will be saved until you approve the import."
     });
@@ -291,6 +293,18 @@ function sanitizeGoalContext(goalContext) {
   return Object.keys(clean).length ? clean : null;
 }
 
+function sanitizeConversationHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .slice(-10)
+    .map((item) => {
+      const role = item?.role === "assistant" ? "assistant" : "user";
+      const content = String(item?.content || "").trim().slice(0, 1800);
+      return content ? { role, content } : null;
+    })
+    .filter(Boolean);
+}
+
 const goalProposalToolDefinition = {
   type: "function",
   name: "propose_financial_goal",
@@ -300,12 +314,13 @@ const goalProposalToolDefinition = {
     type: "object",
     properties: {
       action: { type: "string", enum: ["create", "update", "delete"] },
-      goalName: { type: "string" },
+      goalNumber: { type: "integer", description: "For update/delete, prefer the numbered goal from EXISTING GOALS when the user did not state an exact goal name." },
+      goalName: { type: "string", description: "Required for create. For update/delete, use the exact user-stated name only when available." },
       goalType: { type: "string", description: "Examples: vacation, savings, emergency_fund, purchase." },
       targetAmount: { type: "number" },
       targetDate: { type: "string", description: "YYYY-MM-DD when known." }
     },
-    required: ["action", "goalName"],
+    required: ["action"],
     additionalProperties: false
   }
 };
@@ -343,7 +358,7 @@ RULES:
 10. Be concise enough to be spoken aloud. Prefer a short answer with key numbers and 2-4 concrete actions over a long essay.
 11. Never ask for or expose names, emails, account numbers, card details, transaction IDs, or user IDs.
 12. This assistant provides financial education and planning support, not individualized investment, tax, or legal advice.
-13. NEVER create, edit, or delete a goal directly. If the user explicitly asks you to do one of those things, call propose_financial_goal. The app will ask for human approval. If the user is merely discussing a hypothetical goal, do not call it.
+13. NEVER create, edit, or delete a goal directly. If the user explicitly asks you to do one of those things, call propose_financial_goal. The app will ask for human approval. If updating/deleting an existing goal, use its goalNumber from EXISTING GOALS whenever the user did not provide an exact name. If the user is merely discussing a hypothetical goal, do not call it.
 
 DATE CONTEXT:
 Current server date: ${localToday}.
@@ -362,7 +377,7 @@ app.post("/api/ai/chat", requireAuth, requirePremiumOrTrial, async (req, res) =>
     return res.status(503).json({ error: "OPENAI_API_KEY is not configured on the server." });
   }
 
-  const { message, goalContext = null } = req.body || {};
+  const { message, goalContext = null, history = [] } = req.body || {};
   if (!message || typeof message !== "string" || !message.trim()) {
     return res.status(400).json({ error: "A message is required." });
   }
@@ -383,10 +398,14 @@ app.post("/api/ai/chat", requireAuth, requirePremiumOrTrial, async (req, res) =>
         existingGoals
       );
       const tools = [...financialToolDefinitions, goalProposalToolDefinition];
+      let turnInput = [
+        ...sanitizeConversationHistory(history),
+        { role: "user", content: message.trim() }
+      ];
       let response = await openai.responses.create({
         model: config.openAiModel,
         instructions,
-        input: message.trim(),
+        input: turnInput,
         tools,
         tool_choice: "auto",
         parallel_tool_calls: true,
@@ -404,7 +423,7 @@ app.post("/api/ai/chat", requireAuth, requirePremiumOrTrial, async (req, res) =>
           return {
             answer,
             toolsUsed,
-            visualization: planVisualization(toolsUsed),
+            visualization: planVisualization(toolsUsed, message),
             suggestedActions: buildSuggestedActions(toolsUsed, message),
             goalProposal: rawGoalProposal ? await resolveProposal(req, rawGoalProposal) : null,
             subscription: req.accessStatus
@@ -441,10 +460,11 @@ app.post("/api/ai/chat", requireAuth, requirePremiumOrTrial, async (req, res) =>
           });
         }
 
+        turnInput = [...turnInput, ...(response.output || []), ...toolOutputs];
         response = await openai.responses.create({
           model: config.openAiModel,
           instructions,
-          input: [...(response.output || []), ...toolOutputs],
+          input: turnInput,
           tools,
           tool_choice: "none",
           parallel_tool_calls: true,

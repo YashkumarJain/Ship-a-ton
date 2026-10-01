@@ -85,10 +85,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Card(
           child: SwitchListTile(
             secondary: Icon(widget.voice.enabled ? Icons.mic_rounded : Icons.mic_off_rounded),
-            title: const Text('“Hey Wealth Assistant” wake phrase'),
+            title: const Text('“Hey Assistant” wake phrase'),
             subtitle: const Text('Listens only while the app is open. Works from any main screen.'),
             value: widget.voice.enabled,
             onChanged: widget.voice.setEnabled,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: SwitchListTile(
+            secondary: Icon(
+              widget.voice.speakerEnabled
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
+            ),
+            title: const Text('Assistant speaker'),
+            subtitle: const Text('Read AI answers aloud. Push-to-talk still works when this is off.'),
+            value: widget.voice.speakerEnabled,
+            onChanged: widget.voice.setSpeakerEnabled,
           ),
         ),
         const SizedBox(height: 12),

@@ -43,7 +43,7 @@ $plist = Join-Path $mobileDir "ios\Runner\Info.plist"
 $plistText = Get-Content $plist -Raw
 $usage = @"
 	<key>NSMicrophoneUsageDescription</key>
-	<string>WealthPilot listens for “Hey Wealth Assistant” while the app is open.</string>
+	<string>WealthPilot listens for “Hey Assistant” while the app is open.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>WealthPilot converts your spoken financial questions to text.</string>
 "@

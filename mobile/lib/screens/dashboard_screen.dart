@@ -2,7 +2,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../models/dashboard_data.dart';
 import '../services/api_service.dart';
-import '../widgets/ai_sphere.dart';
 import '../widgets/brand_mark.dart';
 import 'statement_review_screen.dart';
 
@@ -96,10 +95,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   const BrandMark(compact: true),
                   const Spacer(),
-                  Chip(
-                    avatar: const Icon(Icons.circle, size: 10, color: Colors.greenAccent),
-                    label: const Text('Finance core online'),
-                    visualDensity: VisualDensity.compact,
+                  IconButton(
+                    tooltip: 'Refresh',
+                    onPressed: _loading ? null : _load,
+                    icon: const Icon(Icons.refresh_rounded),
                   ),
                 ],
               ),
@@ -139,23 +138,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _welcome(BuildContext context) {
     return Card(
-      elevation: 8,
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
-            const SizedBox(height: 150, child: AiSphere(state: 'idle')),
-            const SizedBox(height: 6),
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 14),
             Text(
-              'Welcome to WealthPilot.',
-              textAlign: TextAlign.center,
+              'Your money, simplified.',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             Text(
-              'Understand your money at a glance. Upload statements whenever you want. WealthPilot adds new transactions to your private history and automatically ignores recognized rows you already imported.',
-              textAlign: TextAlign.center,
+              'Upload a statement, review the rows, and WealthPilot keeps only new transactions.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -168,32 +167,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _statementCard(BuildContext context) {
     return Card(
-      elevation: 8,
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Add a monthly statement', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+            Text('Import statement', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
             const SizedBox(height: 6),
-            const Text('Text PDFs are parsed directly and scanned statements attempt OCR. Upload new-only or overlapping statements anytime: after your review, only genuinely new rows are added.'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45)),
-                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.12),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.upload_file_rounded, size: 44, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(height: 8),
-                  const Text('Select a PDF', style: TextStyle(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 4),
-                  const Text('The original PDF is processed in memory and is not kept.', textAlign: TextAlign.center),
-                ],
-              ),
+            Text(
+              'PDF only • reviewed before saving • original file is not kept',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
@@ -201,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: _uploading
                   ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.picture_as_pdf_rounded),
-              label: Text(_uploading ? 'Reading statement…' : 'Choose statement PDF'),
+              label: Text(_uploading ? 'Reading statement…' : 'Choose PDF'),
             ),
           ],
         ),

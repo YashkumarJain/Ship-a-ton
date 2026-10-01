@@ -45,8 +45,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _voice = VoiceService()
-      ..onGlobalCommand = _handleGlobalVoiceCommand
-      ..onUnhandledCommand = _routeUnhandledVoiceToAssistant;
+  ..onGlobalCommand = _handleGlobalVoiceCommand
+  ..onUnhandledCommand = _routeUnhandledVoiceToAssistant
+  ..onWakeDetected = _handleWakeDetected;
     _voice.initialize();
     _refreshAccess();
   }
@@ -94,24 +95,56 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   }
 
   void _openPaywall() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => PaywallScreen(
-          revenueCat: widget.revenueCat,
-          api: widget.api,
-          onUnlocked: () async {
-            await _refreshAccess();
-            if (!mounted) return;
-            Navigator.of(context).maybePop();
-            final target = _pendingPremiumIndex;
-            _pendingPremiumIndex = null;
-            if (target != null) await _selectIndex(target);
-          },
-        ),
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => PaywallScreen(
+        revenueCat: widget.revenueCat,
+        api: widget.api,
+        onUnlocked: () async {
+          // Refresh the access value used for premium gating.
+          await _refreshAccess();
+
+          if (!mounted) return;
+
+          // SettingsScreen is cached in _pageCache.
+          // Remove the old cached instance so it reloads
+          // subscriptionStatus() and displays "premium".
+          setState(() {
+            _pageCache[4] = null;
+          });
+
+          // Close the paywall.
+          Navigator.of(context).maybePop();
+
+          final target = _pendingPremiumIndex;
+          _pendingPremiumIndex = null;
+
+          // If the paywall was opened because the user selected
+          // Assistant / News / Goals, continue to that screen.
+          if (target != null) {
+            await _selectIndex(target);
+          }
+        },
       ),
-    );
+    ),
+  );
+}
+
+  Future<void> _handleWakeDetected() async {
+  debugPrint('WAKE CALLBACK RECEIVED');
+  if (!mounted) return;
+
+  // "Hey Assistant" should open the Assistant
+  // from Home, News, Goals, or Settings.
+  if (_index != 1) {
+    setState(() {
+      _index = 1;
+    });
   }
+
+  _voice.setActiveScope('assistant');
+}
 
   Future<bool> _handleGlobalVoiceCommand(String command) async {
     final lower = command.toLowerCase().trim();
@@ -133,9 +166,19 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       return true;
     }
     if (nav && lower.contains('news')) {
-      await _selectIndex(2);
-      return true;
-    }
+  // If we are already on the News screen and the user says
+  // "open news 4", "show news 2", etc., let NewsScreen handle it.
+  final numberedNewsCommand = RegExp(
+    r'(?:open|read|show)\s+(?:news\s+)?\d{1,2}\b',
+  ).hasMatch(lower);
+
+  if (_index == 2 && numberedNewsCommand) {
+    return false;
+  }
+
+  await _selectIndex(2);
+  return true;
+}
     if (nav && lower.contains('goal')) {
       await _selectIndex(3);
       return true;

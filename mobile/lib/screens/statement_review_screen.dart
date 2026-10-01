@@ -231,18 +231,33 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.verified_user_outlined),
+                          Expanded(
+                            child: _summaryPill(
+                              context,
+                              '${widget.result.newCount}',
+                              'new',
+                              Icons.add_circle_outline_rounded,
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(widget.result.privacy)),
+                          Expanded(
+                            child: _summaryPill(
+                              context,
+                              '${widget.result.overlapCount}',
+                              'overlap',
+                              Icons.content_copy_rounded,
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text('Extraction: ${widget.result.extractionMethod.toUpperCase()} • ${_transactions.length} rows found'),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'You can upload statements repeatedly. If a new PDF overlaps an older one, WealthPilot keeps the previously saved rows and adds only transactions it has not seen before.',
+                      const SizedBox(height: 10),
+                      Text(
+                        '${_transactions.length} rows to review • PDF not stored',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
                       ),
-                      for (final warning in widget.result.warnings)
+                      for (final warning in widget.result.warnings.take(1))
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text('• $warning', style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
@@ -304,6 +319,30 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _summaryPill(
+    BuildContext context,
+    String value,
+    String label,
+    IconData icon,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
+          const SizedBox(width: 5),
+          Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ],
       ),
     );
   }

@@ -93,15 +93,24 @@ async function resolveProposal(req, proposal) {
   const action = ["create", "update", "delete"].includes(proposal.action) ? proposal.action : "create";
   const goals = await listGoals(req);
   const requestedName = String(proposal.goalName || "").trim();
-  let match = goals.find((goal) => goal.name.toLowerCase() === requestedName.toLowerCase());
+  const goalNumber = Number.parseInt(proposal.goalNumber, 10);
+  let match = Number.isInteger(goalNumber) && goalNumber >= 1
+    ? goals[goalNumber - 1]
+    : null;
+  if (!match && requestedName) {
+    match = goals.find((goal) => goal.name.toLowerCase() === requestedName.toLowerCase());
+  }
   if (!match && proposal.goalType) {
     const sameType = goals.filter((goal) => goal.goalType === String(proposal.goalType));
     if (sameType.length === 1) match = sameType[0];
   }
+  if (action === "create" && !requestedName) {
+    throw new Error("A name is required for a new goal proposal.");
+  }
   return {
     action,
     goalId: action === "create" ? null : match?.id || null,
-    goalName: requestedName,
+    goalName: requestedName || match?.name || "Goal",
     goalType: String(proposal.goalType || match?.goalType || "savings"),
     targetAmount: Number(proposal.targetAmount ?? match?.targetAmount ?? 0),
     targetDate: proposal.targetDate || match?.targetDate || null,

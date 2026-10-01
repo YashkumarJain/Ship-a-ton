@@ -56,6 +56,38 @@ function buildSummary(received, saved) {
   };
 }
 
+async function classifyTransactions(req, rawTransactions = []) {
+  if (!Array.isArray(rawTransactions) || !rawTransactions.length) {
+    return {
+      transactions: [],
+      newTransactions: [],
+      summary: buildSummary(0, 0)
+    };
+  }
+
+  const transactions = rawTransactions.map(validateTransaction);
+  const existing = await existingFingerprints(req, transactions);
+  const seen = new Set(existing);
+  const newTransactions = [];
+
+  for (const transaction of transactions) {
+    if (seen.has(transaction.source_fingerprint)) continue;
+    seen.add(transaction.source_fingerprint);
+    newTransactions.push(transaction);
+  }
+
+  return {
+    transactions,
+    newTransactions,
+    summary: buildSummary(transactions.length, newTransactions.length)
+  };
+}
+
+async function previewTransactions(req, rawTransactions = []) {
+  const { summary } = await classifyTransactions(req, rawTransactions);
+  return summary;
+}
+
 async function existingFingerprints(req, transactions) {
   if (!transactions.length) return new Set();
   if (req.user?.isDemo || !supabase.isConfigured() || !req.accessToken) {
@@ -94,10 +126,8 @@ async function saveApprovedTransactions(req, input = {}) {
   const rawTransactions = Array.isArray(input.transactions) ? input.transactions : [];
   if (!rawTransactions.length) throw new Error("No transactions were supplied.");
   if (rawTransactions.length > 500) throw new Error("A single statement import is limited to 500 transactions.");
-  const transactions = rawTransactions.map(validateTransaction);
+  const { transactions, newTransactions } = await classifyTransactions(req, rawTransactions);
   const received = transactions.length;
-  const existing = await existingFingerprints(req, transactions);
-  const newTransactions = transactions.filter((item) => !existing.has(item.source_fingerprint));
 
   if (req.user?.isDemo || !supabase.isConfigured() || !req.accessToken) {
     const store = getDemoData(req.user.id);
@@ -109,7 +139,6 @@ async function saveApprovedTransactions(req, input = {}) {
         source_occurrence: transaction.sourceOccurrence,
         source: "statement"
       });
-      existing.add(transaction.source_fingerprint);
     }
     store.transactions.sort((a, b) => a.date.localeCompare(b.date));
     store.imports.unshift({
@@ -170,4 +199,4 @@ function demoTransactions(userId) {
   return getDemoData(userId).transactions.map((item) => ({ ...item }));
 }
 
-module.exports = { saveApprovedTransactions, demoTransactions };
+module.exports = { saveApprovedTransactions, previewTransactions, demoTransactions };

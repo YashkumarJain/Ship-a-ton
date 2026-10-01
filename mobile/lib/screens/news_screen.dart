@@ -97,10 +97,16 @@ class _NewsScreenState extends State<NewsScreen> {
   Future<bool> _handleVoiceCommand(String command) async {
     final lower = command.toLowerCase().trim();
 
-    if (lower.contains('turn voice off') || lower.contains('silent mode')) {
-      if (mounted) setState(() => _voiceGuidance = false);
-      return true;
-    }
+    if (lower.contains('turn voice off') ||
+    lower.contains('silent mode')) {
+  await widget.voice.stopSpeaking();
+
+  if (mounted) {
+    setState(() => _voiceGuidance = false);
+  }
+
+  return true;
+}
     if (lower.contains('turn voice on') || lower.contains('voice guidance')) {
       if (mounted) setState(() => _voiceGuidance = true);
       await widget.voice.speak('Voice guidance is on.');
@@ -118,9 +124,14 @@ class _NewsScreenState extends State<NewsScreen> {
         return true;
       }
       if (lower.contains('close news') || lower == 'back') {
-        if (mounted) setState(() => _selectedIndex = null);
-        return true;
-      }
+  await widget.voice.stopSpeaking();
+
+  if (mounted) {
+    setState(() => _selectedIndex = null);
+  }
+
+  return true;
+}
       if (lower.contains('next news') || lower == 'next') {
         final next = _selectedIndex! + 1;
         if (next < _items.length) await _selectItem(next, speak: _voiceGuidance);
@@ -152,11 +163,27 @@ class _NewsScreenState extends State<NewsScreen> {
     return false;
   }
 
-  Future<void> _selectItem(int index, {bool speak = false}) async {
-    if (index < 0 || index >= _items.length || !mounted) return;
-    setState(() => _selectedIndex = index);
-    if (speak) await _speakItem(_items[index]);
+  Future<void> _selectItem(
+  int index, {
+  bool speak = false,
+}) async {
+  if (index < 0 ||
+      index >= _items.length ||
+      !mounted) {
+    return;
   }
+
+  // Stop any story that may already be speaking.
+  await widget.voice.stopSpeaking();
+
+  if (!mounted) return;
+
+  setState(() => _selectedIndex = index);
+
+  if (speak) {
+    await _speakItem(_items[index]);
+  }
+}
 
   Future<void> _speakItem(NewsItem item) async {
     final signal = item.marketSignal == 'uncertain'
@@ -195,10 +222,29 @@ class _NewsScreenState extends State<NewsScreen> {
             title: const Text('Industry pulse'),
             actions: [
               IconButton(
-                tooltip: _voiceGuidance ? 'Voice guidance on' : 'Voice guidance off',
-                onPressed: () => setState(() => _voiceGuidance = !_voiceGuidance),
-                icon: Icon(_voiceGuidance ? Icons.volume_up_rounded : Icons.volume_off_rounded),
-              ),
+  tooltip:
+      _voiceGuidance
+          ? 'Voice guidance on'
+          : 'Voice guidance off',
+  onPressed: () async {
+    final nextValue = !_voiceGuidance;
+
+    if (!nextValue) {
+      await widget.voice.stopSpeaking();
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _voiceGuidance = nextValue;
+    });
+  },
+  icon: Icon(
+    _voiceGuidance
+        ? Icons.volume_up_rounded
+        : Icons.volume_off_rounded,
+  ),
+),
               IconButton(onPressed: () => _load(refresh: true), icon: const Icon(Icons.refresh_rounded)),
             ],
           ),
@@ -313,9 +359,15 @@ class _NewsScreenState extends State<NewsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => setState(() => _selectedIndex = null),
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
+  onPressed: () async {
+    await widget.voice.stopSpeaking();
+
+    if (!mounted) return;
+
+    setState(() => _selectedIndex = null);
+  },
+  icon: const Icon(Icons.arrow_back_rounded),
+),
         title: Text('News ${index + 1} of ${_items.length}'),
         actions: [
           IconButton(

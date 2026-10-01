@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>WealthPilot uses the microphone for push-to-talk and the “Hey Assistant” wake phrase while the app is open.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>WealthPilot converts your spoken financial questions to text.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -43,22 +47,10 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
-					<key>NSMicrophoneUsageDescription</key>
-	<string>WealthPilot listens for “Hey Wealth Assistant” while the app is open.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>WealthPilot converts your spoken financial questions to text.</string>
-</dict>
+				</dict>
 			</array>
-			<key>NSMicrophoneUsageDescription</key>
-	<string>WealthPilot listens for “Hey Wealth Assistant” while the app is open.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>WealthPilot converts your spoken financial questions to text.</string>
-</dict>
-		<key>NSMicrophoneUsageDescription</key>
-	<string>WealthPilot listens for “Hey Wealth Assistant” while the app is open.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>WealthPilot converts your spoken financial questions to text.</string>
-</dict>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -78,10 +70,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>WealthPilot listens for “Hey Wealth Assistant” while the app is open.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>WealthPilot converts your spoken financial questions to text.</string>
 </dict>
 </plist>
-

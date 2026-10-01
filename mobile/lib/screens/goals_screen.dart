@@ -95,11 +95,23 @@ class _GoalsScreenState extends State<GoalsScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
             FilledButton(
               onPressed: () {
                 final parsed = double.tryParse(amount.text.trim());
                 if (name.text.trim().isEmpty || parsed == null || parsed < 0) return;
+
+                // Release the focused TextField/keyboard before the dialog route
+                // begins deactivating. This avoids leaving inherited focus/input
+                // dependents attached while the dialog is being removed.
+                FocusScope.of(context).unfocus();
+
                 Navigator.pop(context, {
                   'name': name.text.trim(),
                   'goalType': type,
@@ -114,9 +126,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ),
     );
 
+    // showDialog completes as soon as Navigator.pop is called, while the dialog
+    // can still be finishing its reverse transition/deactivation. Give Flutter
+    // time to remove the TextFields from the tree before disposing controllers
+    // or immediately presenting the next dialog.
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
     name.dispose();
     amount.dispose();
     date.dispose();
+
     if (draft == null || !mounted) return;
 
     final approved = await showDialog<bool>(

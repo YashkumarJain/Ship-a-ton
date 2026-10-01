@@ -102,7 +102,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 18),
-                    const _FeatureRow(icon: Icons.mic_rounded, text: '“Hey Wealth Assistant” voice experience'),
+                    const _FeatureRow(icon: Icons.mic_rounded, text: '“Hey Assistant” voice experience'),
                     const _FeatureRow(icon: Icons.auto_graph_rounded, text: 'Multi-step financial analysis + adaptive charts'),
                     const _FeatureRow(icon: Icons.flag_rounded, text: 'Goal and vacation planning with approval controls'),
                     const _FeatureRow(icon: Icons.newspaper_rounded, text: 'Top verified industry news + spoken overviews'),

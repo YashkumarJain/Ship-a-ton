@@ -83,7 +83,7 @@ Recommended short story:
 
 1. Sign in.
 2. Show saved statement snapshot.
-3. Say: `Hey Wealth Assistant, why did my spending increase?`
+3. Say: `Hey Assistant, why did my spending increase?`
 4. Show the tool-grounded answer and changing chart.
 5. Ask: `What can I change next month to save for a vacation?`
 6. Ask the AI to create a vacation goal.

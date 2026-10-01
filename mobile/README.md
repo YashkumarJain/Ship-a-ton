@@ -14,13 +14,13 @@ The app uses responsive constraints rather than a fixed phone size. It switches 
 
 ## Voice behavior
 
-`Hey Wealth Assistant` is listened for only while WealthPilot is in the foreground. The same shared voice service is available from every screen.
+`Hey Assistant` is listened for only while WealthPilot is in the foreground. The same shared voice service is available from every screen.
 
 Examples:
 
-- `Hey Wealth Assistant, open news`
-- `Hey Wealth Assistant, why did my spending increase?`
-- `Hey Wealth Assistant, open goals`
+- `Hey Assistant, open news`
+- `Hey Assistant, why did my spending increase?`
+- `Hey Assistant, open goals`
 - while reading news: `read this`, `open source`, `next news`, `previous news`
 
 News never auto-advances to the next story.

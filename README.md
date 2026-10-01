@@ -43,7 +43,7 @@ GPT can autonomously call several tools for one question, combine their evidence
 Premium includes:
 
 - AI assistant
-- `Hey Wealth Assistant` wake phrase while the app is open
+- `Hey Assistant` wake phrase while the app is open
 - global voice navigation from any app screen
 - device speech-to-text and text-to-speech
 - animated blue/purple AI sphere

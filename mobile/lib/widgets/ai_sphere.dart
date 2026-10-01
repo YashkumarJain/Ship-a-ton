@@ -18,7 +18,7 @@ class _AiSphereState extends State<AiSphere>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
     )..repeat();
   }
 
@@ -30,83 +30,60 @@ class _AiSphereState extends State<AiSphere>
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 170.0;
-        final height = constraints.maxHeight.isFinite ? constraints.maxHeight : 170.0;
-        final available = math.min(width, height);
-        final base = (available * 0.7).clamp(68.0, 132.0).toDouble();
-        final inner = base * 0.61;
-        final ringBase = base * 1.22;
+        final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 96.0;
+        final height = constraints.maxHeight.isFinite ? constraints.maxHeight : 96.0;
+        final size = math.min(width, height).clamp(48.0, 104.0).toDouble();
+        final active = widget.state != 'idle' && widget.state != 'unavailable';
 
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
-            final t = _controller.value;
-            final active = widget.state != 'idle';
-            final pulse = active ? 1 + math.sin(t * math.pi * 2) * 0.055 : 1.0;
-            final speaking = widget.state == 'speaking';
-            final ringPulse = speaking ? base * 0.12 * math.sin(t * math.pi * 2).abs() : 0.0;
+            final wave = active
+                ? 1 + math.sin(_controller.value * math.pi * 2) * 0.035
+                : 1.0;
             return Center(
               child: Transform.scale(
-                scale: pulse,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (active)
-                      Container(
-                        width: ringBase + ringPulse,
-                        height: ringBase + ringPulse,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.purpleAccent.withValues(alpha: 0.28),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    Container(
-                      width: base,
-                      height: base,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: SweepGradient(
-                          transform: GradientRotation(t * math.pi * 2),
-                          colors: const [
-                            Color(0xFF1C8DFF),
-                            Color(0xFF7A5CFA),
-                            Color(0xFFD45CFF),
-                            Color(0xFF33E6FF),
-                            Color(0xFF1C8DFF),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF7A5CFA).withValues(alpha: active ? 0.55 : 0.28),
-                            blurRadius: active ? base * 0.26 : base * 0.15,
-                            spreadRadius: active ? base * 0.04 : 1,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: inner,
-                          height: inner,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.75),
-                                const Color(0xFF6D5DFB).withValues(alpha: 0.45),
-                                const Color(0xFF07101F).withValues(alpha: 0.92),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                scale: wave,
+                child: Container(
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: colors.primary.withValues(alpha: active ? 0.55 : 0.22),
                     ),
-                  ],
+                    gradient: RadialGradient(
+                      colors: [
+                        colors.primary.withValues(alpha: active ? 0.28 : 0.14),
+                        colors.surfaceContainerHighest.withValues(alpha: 0.92),
+                      ],
+                    ),
+                    boxShadow: active
+                        ? [
+                            BoxShadow(
+                              color: colors.primary.withValues(alpha: 0.18),
+                              blurRadius: 24,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : const [],
+                  ),
+                  child: Icon(
+                    widget.state == 'speaking'
+                        ? Icons.graphic_eq_rounded
+                        : widget.state == 'listening'
+                            ? Icons.mic_none_rounded
+                            : widget.state == 'thinking'
+                                ? Icons.auto_awesome_rounded
+                                : Icons.auto_graph_rounded,
+                    size: size * 0.34,
+                    color: widget.state == 'unavailable'
+                        ? colors.error
+                        : colors.primary,
+                  ),
                 ),
               ),
             );

@@ -30,7 +30,7 @@
 - vacation-aware planning
 - structured visualization planner based on actual tools used
 - Flutter Assistant screen with animated sphere, 2.5D-style chart and haptics
-- global foreground `Hey Wealth Assistant` voice wake phrase
+- global foreground `Hey Assistant` voice wake phrase
 - device speech-to-text and text-to-speech
 - Goals screen
 - AI can propose goal create/update/delete, but cannot apply it

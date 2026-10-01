@@ -48,7 +48,12 @@ class _WealthPilotAppState extends State<WealthPilotApp> {
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF735CFF);
+    const seed = Color(0xFF7C6CFF);
+    final darkScheme = ColorScheme.fromSeed(
+      seedColor: seed,
+      brightness: Brightness.dark,
+      surface: const Color(0xFF0B1120),
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'WealthPilot',
@@ -64,13 +69,35 @@ class _WealthPilotAppState extends State<WealthPilotApp> {
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
-        scaffoldBackgroundColor: const Color(0xFF07101F),
+        colorScheme: darkScheme,
+        scaffoldBackgroundColor: const Color(0xFF070B14),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          centerTitle: false,
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: const Color(0xFF0A1020),
+          indicatorColor: darkScheme.primaryContainer.withValues(alpha: 0.7),
+          height: 68,
+        ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+          fillColor: const Color(0xFF111827),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
         ),
-        cardTheme: const CardThemeData(clipBehavior: Clip.antiAlias),
+        cardTheme: CardThemeData(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          color: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+          ),
+        ),
       ),
       home: RootGate(themeService: widget.themeService),
     );

@@ -20,6 +20,14 @@ class ChartPoint {
         direction: json['direction']?.toString(),
         category: json['category']?.toString(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'label': label,
+        'value': value,
+        if (secondaryValue != null) 'secondaryValue': secondaryValue,
+        if (direction != null) 'direction': direction,
+        if (category != null) 'category': category,
+      };
 }
 
 class VisualizationSpec {
@@ -49,6 +57,14 @@ class VisualizationSpec {
             .map((item) => item.toString())
             .toList(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'title': title,
+        if (subtitle != null) 'subtitle': subtitle,
+        'series': series.map((item) => item.toJson()).toList(),
+        'highlightSequence': highlightSequence,
+      };
 }
 
 class SuggestedAction {
@@ -67,6 +83,12 @@ class SuggestedAction {
         reason: '${json['reason'] ?? ''}',
         monthlyImpact: (json['monthlyImpact'] as num?)?.toDouble() ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'reason': reason,
+        'monthlyImpact': monthlyImpact,
+      };
 }
 
 class GoalProposal {
@@ -111,6 +133,17 @@ class GoalProposal {
         'targetAmount': targetAmount,
         if (targetDate != null) 'targetDate': targetDate,
       };
+
+  Map<String, dynamic> toJson() => {
+        'action': action,
+        if (goalId != null) 'goalId': goalId,
+        'goalName': goalName,
+        'goalType': goalType,
+        'targetAmount': targetAmount,
+        if (targetDate != null) 'targetDate': targetDate,
+        'requiresApproval': requiresApproval,
+        'canApply': canApply,
+      };
 }
 
 class AssistantResponse {
@@ -139,4 +172,13 @@ class AssistantResponse {
             ? GoalProposal.fromJson(Map<String, dynamic>.from(json['goalProposal'] as Map))
             : null,
       );
+
+  Map<String, dynamic> toJson() => {
+        'answer': answer,
+        if (visualization != null) 'visualization': visualization!.toJson(),
+        'suggestedActions': {
+          'actions': actions.map((item) => item.toJson()).toList(),
+        },
+        if (goalProposal != null) 'goalProposal': goalProposal!.toJson(),
+      };
 }

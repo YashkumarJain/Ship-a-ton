@@ -52,20 +52,32 @@ class StatementImportResult {
     required this.warnings,
     required this.extractionMethod,
     required this.privacy,
+    required this.newCount,
+    required this.overlapCount,
   });
 
   final List<StatementTransaction> transactions;
   final List<String> warnings;
   final String extractionMethod;
   final String privacy;
+  final int newCount;
+  final int overlapCount;
 
-  factory StatementImportResult.fromJson(Map<String, dynamic> json) => StatementImportResult(
-        transactions: ((json['transactions'] as List?) ?? const [])
+  factory StatementImportResult.fromJson(Map<String, dynamic> json) {
+    final transactions = ((json['transactions'] as List?) ?? const [])
             .whereType<Map>()
             .map((item) => StatementTransaction.fromJson(Map<String, dynamic>.from(item)))
-            .toList(),
+            .toList();
+    final preview = json['importPreview'] is Map
+        ? Map<String, dynamic>.from(json['importPreview'] as Map)
+        : const <String, dynamic>{};
+    return StatementImportResult(
+        transactions: transactions,
         warnings: ((json['warnings'] as List?) ?? const []).map((e) => '$e').toList(),
         extractionMethod: '${json['extractionMethod'] ?? 'text'}',
         privacy: '${json['privacy'] ?? ''}',
+        newCount: (preview['saved'] as num?)?.toInt() ?? transactions.length,
+        overlapCount: (preview['duplicatesSkipped'] as num?)?.toInt() ?? 0,
       );
+  }
 }

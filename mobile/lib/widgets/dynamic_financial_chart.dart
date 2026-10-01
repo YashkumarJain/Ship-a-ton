@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -22,47 +21,12 @@ class DynamicFinancialChart extends StatefulWidget {
 }
 
 class _DynamicFinancialChartState extends State<DynamicFinancialChart> {
-  Timer? _timer;
-  int _highlightIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _restartTimer();
-  }
-
-  @override
-  void didUpdateWidget(covariant DynamicFinancialChart oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.spec != widget.spec ||
-    oldWidget.animateHighlight != widget.animateHighlight ||
-    oldWidget.highlightLabel != widget.highlightLabel) {
-      _highlightIndex = 0;
-      _restartTimer();
-    }
-  }
-
-  void _restartTimer() {
-  _timer?.cancel();
-}
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
   String? get _highlightLabel {
-  if (!widget.animateHighlight) return null;
-
-  final label = widget.highlightLabel?.trim();
-
-  if (label == null || label.isEmpty) {
-    return null;
+    if (!widget.animateHighlight) return null;
+    final label = widget.highlightLabel?.trim();
+    if (label == null || label.isEmpty) return null;
+    return label;
   }
-
-  return label;
-}
 
 
   @override

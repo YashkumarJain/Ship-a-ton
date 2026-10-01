@@ -19,6 +19,11 @@ class ApiException implements Exception {
 }
 
 class ApiService {
+  String get localUserKey {
+    if (!AppConfig.supabaseConfigured) return 'demo-user';
+    return Supabase.instance.client.auth.currentUser?.id ?? 'anonymous';
+  }
+
   String? get _token {
     if (!AppConfig.supabaseConfigured) return null;
     return Supabase.instance.client.auth.currentSession?.accessToken;
@@ -111,6 +116,7 @@ class ApiService {
   Future<AssistantResponse> chat(
     String message, {
     Map<String, dynamic>? goalContext,
+    List<Map<String, String>> history = const [],
   }) async {
     final response = await http.post(
       _uri('/api/ai/chat'),
@@ -118,6 +124,7 @@ class ApiService {
       body: jsonEncode({
         'message': message,
         if (goalContext != null) 'goalContext': goalContext,
+        if (history.isNotEmpty) 'history': history,
       }),
     );
     return AssistantResponse.fromJson(await _decode(response));
