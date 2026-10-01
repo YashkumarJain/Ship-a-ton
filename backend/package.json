@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Ship-a-ton Wealth Assistant API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test:intelligence": "node intelligencetest.js",
+    "check": "node --check server.js && node --check services/newsService.js && node --check services/financialDataService.js && node --check services/statementParser.js && node --check services/pdfStatementService.js && node --check services/profileService.js && node --check services/goalService.js",
+    "test:statements": "node statementParser.test.js && node statementMerge.test.js"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.0",
+    "express": "^5.2.1",
+    "openai": "^7.18.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.4.149",
+    "@napi-rs/canvas": "^0.1.80",
+    "tesseract.js": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: wealthpilot-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.6-luna
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: REVENUECAT_SECRET_API_KEY
+        sync: false
+      - key: REVENUECAT_ENTITLEMENT_ID
+        value: premium
+      - key: ALLOW_DEMO_MODE
+        value: "false"
+      - key: ALLOW_SIMULATED_PURCHASES
+        value: "false"
+      - key: NEWS_REFRESH_HOURS
+        value: "6"
+      - key: CRON_SECRET
+        generateValue: true
